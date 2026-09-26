@@ -63,6 +63,15 @@ Unit tests cover TSX/Circuit JSON parity, path closure, safe zero-ohm
 reconnection, non-mutation, missing selectors, and the no-short rule for
 ordinary passives.
 
+### Snapshot gallery
+
+| Board | PCB | Schematic |
+| --- | --- | --- |
+| **BOOSTXL-BASSENSORS** | ![BOOSTXL-BASSENSORS PCB before and after](tests/svg/__snapshots__/boostxl-bassensors-pcb.snap.svg) | ![BOOSTXL-BASSENSORS schematic before and after](tests/svg/__snapshots__/boostxl-bassensors-schematic.snap.svg) |
+| **BOOSTXL-RS232** | ![BOOSTXL-RS232 PCB before and after](tests/svg/__snapshots__/boostxl-rs232-pcb.snap.svg) | ![BOOSTXL-RS232 schematic before and after](tests/svg/__snapshots__/boostxl-rs232-schematic.snap.svg) |
+| **BOOSTXL-TMP107** | ![BOOSTXL-TMP107 PCB before and after](tests/svg/__snapshots__/boostxl-tmp107-pcb.snap.svg) | ![BOOSTXL-TMP107 schematic before and after](tests/svg/__snapshots__/boostxl-tmp107-schematic.snap.svg) |
+| **BOOSTXL-ULN2003** | ![BOOSTXL-ULN2003 PCB before and after](tests/svg/__snapshots__/boostxl-uln2003-pcb.snap.svg) | ![BOOSTXL-ULN2003 schematic before and after](tests/svg/__snapshots__/boostxl-uln2003-schematic.snap.svg) |
+
 ```sh
 bun install
 bun test
