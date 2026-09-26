@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test"
 import type { CircuitJson } from "circuit-json"
 import {
-  subtraceComponentFromCircuitJson,
-  subtraceComponentFromCircuitJsonWithDetails,
+  subtractComponentFromCircuitJson,
+  subtractComponentFromCircuitJsonWithDetails,
 } from "../../lib"
 import {
   createTiEvmBoard,
@@ -17,8 +17,8 @@ test("TSX and Circuit JSON use the same subtraction pipeline", async () => {
   const circuitJson = await renderCircuitJson(board)
   const options = { componentNames: removedFixtureNames }
 
-  const fromTsx = await subtraceComponentFromCircuitJson(board, options)
-  const fromCircuitJson = await subtraceComponentFromCircuitJson(
+  const fromTsx = await subtractComponentFromCircuitJson(board, options)
+  const fromCircuitJson = await subtractComponentFromCircuitJson(
     circuitJson,
     options,
   )
@@ -30,7 +30,7 @@ test("removes components between selected endpoints and bypasses zero ohms", asy
   const circuitJson = await renderCircuitJson(
     createTiEvmBoard(tiEvmFixtures[1]),
   )
-  const result = await subtraceComponentFromCircuitJsonWithDetails(
+  const result = await subtractComponentFromCircuitJsonWithDetails(
     circuitJson,
     {
       componentNames: removedFixtureNames,
@@ -64,12 +64,12 @@ test("does not mutate Circuit JSON and rejects missing selectors", async () => {
   )
   const originalText = JSON.stringify(circuitJson)
 
-  await subtraceComponentFromCircuitJson(circuitJson, {
+  await subtractComponentFromCircuitJson(circuitJson, {
     componentNames: ["R0_BYPASS"],
   })
   expect(JSON.stringify(circuitJson)).toBe(originalText)
   await expect(
-    subtraceComponentFromCircuitJson(circuitJson, {
+    subtractComponentFromCircuitJson(circuitJson, {
       componentNames: ["DOES_NOT_EXIST"],
     }),
   ).rejects.toThrow("Component selectors did not match")
@@ -79,7 +79,7 @@ test("ordinary resistors are not silently shorted", async () => {
   const circuitJson = await renderCircuitJson(
     createTiEvmBoard(tiEvmFixtures[3]),
   )
-  const result = await subtraceComponentFromCircuitJsonWithDetails(
+  const result = await subtractComponentFromCircuitJsonWithDetails(
     circuitJson,
     {
       componentNames: ["R_INPUT"],
@@ -93,7 +93,7 @@ test("can disable between-component expansion", async () => {
   const circuitJson = await renderCircuitJson(
     createTiEvmBoard(tiEvmFixtures[0]),
   )
-  const result = await subtraceComponentFromCircuitJsonWithDetails(
+  const result = await subtractComponentFromCircuitJsonWithDetails(
     circuitJson,
     {
       componentNames: ["R_EVAL_LEFT", "R_EVAL_RIGHT"],
@@ -112,7 +112,7 @@ test("subtraction removes owned schematic and PCB primitives", async () => {
   const circuitJson = await renderCircuitJson(
     createTiEvmBoard(tiEvmFixtures[0]),
   )
-  const result = await subtraceComponentFromCircuitJson(circuitJson, {
+  const result = await subtractComponentFromCircuitJson(circuitJson, {
     componentNames: ["R_EVAL_LEFT"],
   })
 

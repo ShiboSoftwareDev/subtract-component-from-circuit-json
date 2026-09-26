@@ -1,9 +1,9 @@
 import { Circuit } from "@tscircuit/core"
 import type { CircuitJson } from "circuit-json"
-import type { SubtraceInput } from "./types"
+import type { SubtractInput } from "./types"
 
-export async function normalizeSubtraceInput(
-  source: SubtraceInput,
+export async function normalizeSubtractInput(
+  source: SubtractInput,
 ): Promise<CircuitJson> {
   if (Array.isArray(source)) return structuredClone(source)
 

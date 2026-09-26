@@ -1,9 +1,9 @@
 import type { CircuitIndex } from "./circuit-index"
-import type { SourceComponentId, SubtraceComponentOptions } from "./types"
+import type { SourceComponentId, SubtractComponentOptions } from "./types"
 
 export function resolveSelectedComponentIds(
   index: CircuitIndex,
-  options: SubtraceComponentOptions,
+  options: SubtractComponentOptions,
 ): ReadonlySet<SourceComponentId> {
   const requestedNames = new Set(options.componentNames ?? [])
   const requestedIds = new Set(options.sourceComponentIds ?? [])

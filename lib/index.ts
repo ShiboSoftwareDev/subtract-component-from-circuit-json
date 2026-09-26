@@ -1,9 +1,9 @@
 export {
-  subtraceComponentFromCircuitJson,
-  subtraceComponentFromCircuitJsonWithDetails,
-} from "./subtrace-component-from-circuit-json"
+  subtractComponentFromCircuitJson,
+  subtractComponentFromCircuitJsonWithDetails,
+} from "./subtract-component-from-circuit-json"
 export type {
-  SubtraceComponentOptions,
-  SubtraceInput,
-  SubtraceResultDetails,
+  SubtractComponentOptions,
+  SubtractInput,
+  SubtractResultDetails,
 } from "./types"

@@ -1,16 +1,16 @@
 import type { CircuitJson } from "circuit-json"
 import type { ReactElement } from "react"
 
-export type SubtraceInput = CircuitJson | ReactElement
+export type SubtractInput = CircuitJson | ReactElement
 
-export interface SubtraceComponentOptions {
+export interface SubtractComponentOptions {
   componentNames?: readonly string[]
   sourceComponentIds?: readonly string[]
   includeComponentsBetween?: boolean
   preserveNetConnectivity?: boolean
 }
 
-export interface SubtraceResultDetails {
+export interface SubtractResultDetails {
   circuitJson: CircuitJson
   removedComponentNames: readonly string[]
   removedSourceComponentIds: readonly string[]

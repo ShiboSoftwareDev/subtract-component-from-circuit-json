@@ -4,7 +4,7 @@ import {
   convertCircuitJsonToSchematicSvg,
 } from "circuit-to-svg"
 import { stackSvgsHorizontally } from "stack-svgs"
-import { subtraceComponentFromCircuitJson } from "../../lib"
+import { subtractComponentFromCircuitJson } from "../../lib"
 import {
   createTiEvmBoard,
   removedFixtureNames,
@@ -20,7 +20,7 @@ test("four TI EVM fixtures show PCB and schematic before/after pairs", async () 
     const board = createTiEvmBoard(fixture)
     const before = await renderCircuitJson(board)
     const input = fixture.inputKind === "tsx" ? board : before
-    const after = await subtraceComponentFromCircuitJson(input, {
+    const after = await subtractComponentFromCircuitJson(input, {
       componentNames: removedFixtureNames,
     })
     pcbRows.push(

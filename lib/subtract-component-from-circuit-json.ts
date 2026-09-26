@@ -4,31 +4,31 @@ import { expandWithComponentsBetween } from "./component-graph"
 import { createDirectElements } from "./create-direct-elements"
 import { resolveRemovalConnections } from "./direct-connection"
 import { filterRemovedElements } from "./filter-removed-elements"
-import { normalizeSubtraceInput } from "./normalize-subtrace-input"
+import { normalizeSubtractInput } from "./normalize-subtract-input"
 import { resolveSelectedComponentIds } from "./resolve-selected-components"
 import type {
   ElementId,
-  SubtraceComponentOptions,
-  SubtraceInput,
-  SubtraceResultDetails,
+  SubtractComponentOptions,
+  SubtractInput,
+  SubtractResultDetails,
 } from "./types"
 
-export async function subtraceComponentFromCircuitJson(
-  source: SubtraceInput,
-  options: SubtraceComponentOptions,
+export async function subtractComponentFromCircuitJson(
+  source: SubtractInput,
+  options: SubtractComponentOptions,
 ): Promise<CircuitJson> {
-  const result = await subtraceComponentFromCircuitJsonWithDetails(
+  const result = await subtractComponentFromCircuitJsonWithDetails(
     source,
     options,
   )
   return result.circuitJson
 }
 
-export async function subtraceComponentFromCircuitJsonWithDetails(
-  source: SubtraceInput,
-  options: SubtraceComponentOptions,
-): Promise<SubtraceResultDetails> {
-  const originalCircuitJson = await normalizeSubtraceInput(source)
+export async function subtractComponentFromCircuitJsonWithDetails(
+  source: SubtractInput,
+  options: SubtractComponentOptions,
+): Promise<SubtractResultDetails> {
+  const originalCircuitJson = await normalizeSubtractInput(source)
   const index = createCircuitIndex(originalCircuitJson)
   const selectedIds = resolveSelectedComponentIds(index, options)
   const removedComponentIds =

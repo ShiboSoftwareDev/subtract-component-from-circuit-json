@@ -1,26 +1,23 @@
-# subtrace-component-from-circuit-json
+# subtract-component-from-circuit-json
 
 Remove evaluation-only components from a tscircuit board while preserving the
 useful circuit. The input can be a TSX element or already-rendered Circuit JSON;
 both routes use the same Circuit JSON subtraction pipeline.
 
 ```tsx
-import { subtraceComponentFromCircuitJson } from "subtrace-component-from-circuit-json"
+import { subtractComponentFromCircuitJson } from "subtract-component-from-circuit-json"
 
-const smallerBoard = await subtraceComponentFromCircuitJson(
+const smallerBoard = await subtractComponentFromCircuitJson(
   <board width="30mm" height="20mm">{/* ... */}</board>,
   { componentNames: ["J_DEBUG", "TP_DEBUG"] },
 )
 ```
 
 ```ts
-const smallerBoard = await subtraceComponentFromCircuitJson(circuitJson, {
+const smallerBoard = await subtractComponentFromCircuitJson(circuitJson, {
   sourceComponentIds: ["source_component_debug_header"],
 })
 ```
-
-The public function name intentionally follows the requested API spelling:
-`subtraceComponentFromCircuitJson`.
 
 ## Behavior
 

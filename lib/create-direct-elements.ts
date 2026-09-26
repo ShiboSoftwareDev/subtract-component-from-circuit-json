@@ -22,7 +22,7 @@ export function createDirectElements(
   const sourceTraceIds: SourceTraceId[] = []
   for (const [connectionIndex, connection] of connections.entries()) {
     const sourceTraceId = reserveId(
-      `source_trace_subtrace_direct_${connectionIndex}`,
+      `source_trace_subtract_direct_${connectionIndex}`,
       occupiedIds,
     )
     sourceTraceIds.push(sourceTraceId)
@@ -61,6 +61,6 @@ function createSourceTrace(
     min_trace_thickness: relatedTraces.find(
       (trace) => trace.min_trace_thickness !== undefined,
     )?.min_trace_thickness,
-    name: `subtrace_direct_${sourceTraceId}`,
+    name: `subtract_direct_${sourceTraceId}`,
   }
 }
