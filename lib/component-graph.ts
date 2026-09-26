@@ -23,7 +23,11 @@ export function expandWithComponentsBetween(
       const leftId = orderedIds[leftIndex]
       const rightId = orderedIds[rightIndex]
       if (!leftId || !rightId) continue
-      for (const componentId of findShortestPath(graph, leftId, rightId)) {
+      for (const componentId of findShortestPath({
+        graph,
+        startId: leftId,
+        targetId: rightId,
+      })) {
         expandedIds.add(componentId)
       }
     }
@@ -42,27 +46,35 @@ function createComponentGraph(index: CircuitIndex): ComponentGraph {
     if (componentIds.size !== 2) continue
     const [leftId, rightId] = [...componentIds].sort()
     if (!leftId || !rightId) continue
-    addNeighbor(neighborsById, leftId, rightId)
-    addNeighbor(neighborsById, rightId, leftId)
+    addNeighbor({ neighborsById, componentId: leftId, neighborId: rightId })
+    addNeighbor({ neighborsById, componentId: rightId, neighborId: leftId })
   }
   return neighborsById
 }
 
-function addNeighbor(
-  neighborsById: Map<SourceComponentId, Set<SourceComponentId>>,
-  componentId: SourceComponentId,
-  neighborId: SourceComponentId,
-): void {
+function addNeighbor({
+  neighborsById,
+  componentId,
+  neighborId,
+}: {
+  neighborsById: Map<SourceComponentId, Set<SourceComponentId>>
+  componentId: SourceComponentId
+  neighborId: SourceComponentId
+}): void {
   const neighbors = neighborsById.get(componentId) ?? new Set()
   neighbors.add(neighborId)
   neighborsById.set(componentId, neighbors)
 }
 
-function findShortestPath(
-  graph: ComponentGraph,
-  startId: SourceComponentId,
-  targetId: SourceComponentId,
-): readonly SourceComponentId[] {
+function findShortestPath({
+  graph,
+  startId,
+  targetId,
+}: {
+  graph: ComponentGraph
+  startId: SourceComponentId
+  targetId: SourceComponentId
+}): readonly SourceComponentId[] {
   const queue: SourceComponentId[][] = [[startId]]
   const visitedIds = new Set<SourceComponentId>([startId])
   while (queue.length > 0) {

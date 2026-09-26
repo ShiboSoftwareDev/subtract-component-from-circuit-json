@@ -53,6 +53,40 @@ export function normalizeSvgViewport(svg: string): string {
   return normalizedSvg
 }
 
+export function addSvgHeading(svg: string, heading: string): string {
+  const openingTag = svg.match(/<svg\b[^>]*>/u)?.[0]
+  if (!openingTag) return svg
+  const viewBox = getSvgAttribute(openingTag, "viewBox")
+  if (!viewBox) return svg
+  const dimensions = viewBox
+    .trim()
+    .split(/[\s,]+/u)
+    .map(Number)
+  if (dimensions.length !== 4 || !dimensions.every(Number.isFinite)) return svg
+  const [minimumX, minimumY, viewportWidth, viewportHeight] = dimensions
+  if (
+    minimumX === undefined ||
+    minimumY === undefined ||
+    viewportWidth === undefined ||
+    viewportHeight === undefined
+  ) {
+    return svg
+  }
+  const closingTagIndex = svg.lastIndexOf("</svg>")
+  if (closingTagIndex < 0) return svg
+  const headingHeight = 48
+  const content = svg.slice(openingTag.length, closingTagIndex)
+  const escapedHeading = heading
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${viewportWidth}" height="${viewportHeight + headingHeight}" viewBox="0 0 ${viewportWidth} ${viewportHeight + headingHeight}">
+  <rect x="0" y="0" width="${viewportWidth}" height="${headingHeight}" fill="#111827" />
+  <text x="${viewportWidth / 2}" y="31" fill="#ffffff" font-family="sans-serif" font-size="22" font-weight="700" text-anchor="middle">${escapedHeading}</text>
+  <g transform="translate(${-minimumX} ${headingHeight - minimumY})">${content}</g>
+</svg>`
+}
+
 function getSvgAttribute(tag: string, name: string): string | undefined {
   const escapedName = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")
   const match = tag.match(

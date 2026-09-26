@@ -1,6 +1,14 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.6/schema.json",
-  "files": { "includes": ["**", "!!dist", "!!node_modules"] },
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "files": {
+    "includes": [
+      "**",
+      "!!dist",
+      "!!node_modules",
+      "!!tests/fixtures/ti-evm",
+      "!!tests/svg/__snapshots__"
+    ]
+  },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },
   "linter": {
     "enabled": true,

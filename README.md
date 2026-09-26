@@ -52,11 +52,16 @@ disable the corresponding behavior.
 
 ## Verification
 
-The SVG suite contains paired before/after PCB and schematic snapshots for four
-TI evaluation-board-inspired fixtures: LM5158EVM-BST, LM5177EVM-HP,
-TPS6287xEVM, and TMDS62LEVM. Unit tests cover TSX/Circuit JSON parity, path
-closure, safe zero-ohm reconnection, non-mutation, missing selectors, and the
-no-short rule for ordinary passives.
+The SVG suite contains paired, visibly labelled before/after PCB and schematic
+snapshots for four different TI BoosterPack evaluation modules:
+BOOSTXL-BASSENSORS, BOOSTXL-RS232, BOOSTXL-TMP107, and BOOSTXL-ULN2003. The
+circuits come from the pinned `tscircuit/boosters` source repository. Every test
+case has its own file, following the convention used by `tscircuit/core` and the
+converter repositories.
+
+Unit tests cover TSX/Circuit JSON parity, path closure, safe zero-ohm
+reconnection, non-mutation, missing selectors, and the no-short rule for
+ordinary passives.
 
 ```sh
 bun install

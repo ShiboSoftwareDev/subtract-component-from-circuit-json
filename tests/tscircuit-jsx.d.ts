@@ -5,24 +5,21 @@ import type {
   TraceProps,
 } from "@tscircuit/props"
 
+interface TestCircuitElements {
+  board: BoardProps
+  chip: ChipProps
+  resistor: ResistorProps
+  trace: TraceProps
+}
+
 declare module "react" {
   namespace JSX {
-    interface IntrinsicElements {
-      board: BoardProps
-      chip: ChipProps
-      resistor: ResistorProps
-      trace: TraceProps
-    }
+    interface IntrinsicElements extends TestCircuitElements {}
   }
 }
 
 declare module "react/jsx-runtime" {
   namespace JSX {
-    interface IntrinsicElements {
-      board: BoardProps
-      chip: ChipProps
-      resistor: ResistorProps
-      trace: TraceProps
-    }
+    interface IntrinsicElements extends TestCircuitElements {}
   }
 }

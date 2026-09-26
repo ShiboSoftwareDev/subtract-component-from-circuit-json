@@ -31,17 +31,17 @@ export function resolveRemovalConnections(
     ),
   )
   const directConnections: DirectConnection[] = []
-  addSurvivingTraceConnections(
-    directConnections,
-    touchedTraces,
-    removedSourcePortIds,
-  )
-  addSafeComponentBypasses(
-    directConnections,
+  addSurvivingTraceConnections({
+    connections: directConnections,
+    traces: touchedTraces,
+    removedPortIds: removedSourcePortIds,
+  })
+  addSafeComponentBypasses({
+    connections: directConnections,
     index,
     removedComponentIds,
-    removedSourcePortIds,
-  )
+    removedPortIds: removedSourcePortIds,
+  })
   return {
     removedSourcePortIds,
     touchedSourceTraceIds: new Set(
@@ -51,11 +51,15 @@ export function resolveRemovalConnections(
   }
 }
 
-function addSurvivingTraceConnections(
-  connections: DirectConnection[],
-  traces: CircuitIndex["sourceTraces"],
-  removedPortIds: ReadonlySet<SourcePortId>,
-): void {
+function addSurvivingTraceConnections({
+  connections,
+  traces,
+  removedPortIds,
+}: {
+  connections: DirectConnection[]
+  traces: CircuitIndex["sourceTraces"]
+  removedPortIds: ReadonlySet<SourcePortId>
+}): void {
   for (const trace of traces) {
     const survivingPortIds = trace.connected_source_port_ids.filter(
       (portId) => !removedPortIds.has(portId),
@@ -71,12 +75,17 @@ function addSurvivingTraceConnections(
   }
 }
 
-function addSafeComponentBypasses(
-  connections: DirectConnection[],
-  index: CircuitIndex,
-  removedComponentIds: ReadonlySet<SourceComponentId>,
-  removedPortIds: ReadonlySet<SourcePortId>,
-): void {
+function addSafeComponentBypasses({
+  connections,
+  index,
+  removedComponentIds,
+  removedPortIds,
+}: {
+  connections: DirectConnection[]
+  index: CircuitIndex
+  removedComponentIds: ReadonlySet<SourceComponentId>
+  removedPortIds: ReadonlySet<SourcePortId>
+}): void {
   for (const componentId of removedComponentIds) {
     const component = index.sourceComponentById.get(componentId)
     if (!component) continue

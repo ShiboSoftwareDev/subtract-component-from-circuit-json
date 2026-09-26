@@ -26,7 +26,7 @@ export function createDirectElements(
       occupiedIds,
     )
     sourceTraceIds.push(sourceTraceId)
-    elements.push(createSourceTrace(index, connection, sourceTraceId))
+    elements.push(createSourceTrace({ index, connection, sourceTraceId }))
     const request = {
       index,
       connection,
@@ -41,11 +41,15 @@ export function createDirectElements(
   return { elements, sourceTraceIds }
 }
 
-function createSourceTrace(
-  index: CircuitIndex,
-  connection: DirectConnection,
-  sourceTraceId: SourceTraceId,
-): SourceTrace {
+function createSourceTrace({
+  index,
+  connection,
+  sourceTraceId,
+}: {
+  index: CircuitIndex
+  connection: DirectConnection
+  sourceTraceId: SourceTraceId
+}): SourceTrace {
   const relatedTraces = connection.relatedSourceTraceIds
     .map((traceId) => index.sourceTraceById.get(traceId))
     .filter((trace) => trace !== undefined)

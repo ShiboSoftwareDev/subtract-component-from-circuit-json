@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from "node:fs"
 import { join, relative } from "node:path"
 import ts from "typescript"
 
-test("enforces the tscircuit handbook conventions", () => {
+test("enforces the repository source-code conventions", () => {
   const libraryDirectory = join(import.meta.dir, "../../lib")
   const pendingDirectories = [libraryDirectory]
   const sourcePaths: string[] = []
@@ -129,7 +129,9 @@ test("enforces the tscircuit handbook conventions", () => {
           ) {
             containsScaleIdentifier = true
           }
-          expressionNode.forEachChild((child) => expressionNodes.push(child))
+          expressionNode.forEachChild((child) => {
+            expressionNodes.push(child)
+          })
         }
         if (containsScaleIdentifier) {
           findings.push(`${displayLocation}: handwritten scaling math`)
@@ -138,7 +140,9 @@ test("enforces the tscircuit handbook conventions", () => {
       if (ts.isIdentifier(node)) {
         inspectIdentifier(node, displayLocation, findings)
       }
-      node.forEachChild((child) => pendingNodes.push(child))
+      node.forEachChild((child) => {
+        pendingNodes.push(child)
+      })
     }
   }
   expect(findings).toEqual([])

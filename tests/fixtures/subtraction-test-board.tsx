@@ -1,47 +1,18 @@
 import "@tscircuit/core"
 import type { ReactElement } from "react"
 
-export interface TiEvmFixture {
-  boardName: string
-  chipName: string
-  inputKind: "tsx" | "circuit-json"
-}
-
-export const tiEvmFixtures = [
-  {
-    boardName: "LM5158EVM-BST",
-    chipName: "LM5158",
-    inputKind: "tsx",
-  },
-  {
-    boardName: "LM5177EVM-HP",
-    chipName: "LM5177",
-    inputKind: "circuit-json",
-  },
-  {
-    boardName: "TPS6287xEVM",
-    chipName: "TPS62873",
-    inputKind: "tsx",
-  },
-  {
-    boardName: "TMDS62LEVM",
-    chipName: "AM62L",
-    inputKind: "circuit-json",
-  },
-] as const satisfies readonly TiEvmFixture[]
-
 export const removedFixtureNames = [
   "R0_BYPASS",
   "R_EVAL_LEFT",
   "R_EVAL_RIGHT",
 ] as const
 
-export function createTiEvmBoard(fixture: TiEvmFixture): ReactElement {
+export function createSubtractionTestBoard(): ReactElement {
   return (
     <board width="38mm" height="22mm">
       <chip
         name="U1"
-        manufacturerPartNumber={fixture.chipName}
+        manufacturerPartNumber="SUBTRACTION_TEST_CONTROLLER"
         footprint="soic8"
         pinLabels={{ pin1: "VIN", pin2: "SW", pin3: "GND", pin4: "FB" }}
         pcbX={9}
