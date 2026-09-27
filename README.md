@@ -21,11 +21,14 @@ const smallerBoard = await subtractComponentFromCircuitJson(circuitJson, {
 
 ## Behavior
 
-- TSX is rendered once, then TSX and Circuit JSON use the same implementation.
+- TSX is rendered once, then both input forms enter the same Circuit JSON
+  selection, subtraction, reconnection, and inflation pipeline.
 - Selected `source_component` records and all owned schematic, PCB, CAD, port,
   trace, via, and annotation records are omitted from the inflated result.
-- Components on a shortest direct-trace path between two selected components
-  are also removed by default.
+  References nested inside routes and schematic edges are checked as well.
+- Components on a shortest two-party trace or source-net path between two
+  selected components are also removed by default. High-fanout nets are
+  deliberately excluded from this expansion.
 - A touched trace with two or more surviving endpoints is replaced with direct
   traces between those endpoints.
 - A removed two-pin component is bypassed only when it is a zero-ohm resistor,
@@ -57,20 +60,39 @@ snapshots for four different TI BoosterPack evaluation modules:
 BOOSTXL-BASSENSORS, BOOSTXL-RS232, BOOSTXL-TMP107, and BOOSTXL-ULN2003. The
 circuits come from the pinned `tscircuit/boosters` source repository. Every test
 case has its own file, following the convention used by `tscircuit/core` and the
-converter repositories.
+converter repositories. Fixture generation fails if a board loses all PCB
+traces or produces routing errors, and each subtraction snapshot checks for
+dangling imported route endpoints.
 
-Unit tests cover TSX/Circuit JSON parity, path closure, safe zero-ohm
-reconnection, non-mutation, missing selectors, and the no-short rule for
-ordinary passives.
+Unit tests cover TSX/Circuit JSON parity, direct and source-net path closure,
+safe same-net and zero-ohm reconnection, shared-net retention, non-mutation,
+missing selectors, and the no-short rule for ordinary passives.
 
 ### Snapshot gallery
 
-| Board | PCB | Schematic |
-| --- | --- | --- |
-| **BOOSTXL-BASSENSORS** | ![BOOSTXL-BASSENSORS PCB before and after](tests/svg/__snapshots__/boostxl-bassensors-pcb.snap.svg) | ![BOOSTXL-BASSENSORS schematic before and after](tests/svg/__snapshots__/boostxl-bassensors-schematic.snap.svg) |
-| **BOOSTXL-RS232** | ![BOOSTXL-RS232 PCB before and after](tests/svg/__snapshots__/boostxl-rs232-pcb.snap.svg) | ![BOOSTXL-RS232 schematic before and after](tests/svg/__snapshots__/boostxl-rs232-schematic.snap.svg) |
-| **BOOSTXL-TMP107** | ![BOOSTXL-TMP107 PCB before and after](tests/svg/__snapshots__/boostxl-tmp107-pcb.snap.svg) | ![BOOSTXL-TMP107 schematic before and after](tests/svg/__snapshots__/boostxl-tmp107-schematic.snap.svg) |
-| **BOOSTXL-ULN2003** | ![BOOSTXL-ULN2003 PCB before and after](tests/svg/__snapshots__/boostxl-uln2003-pcb.snap.svg) | ![BOOSTXL-ULN2003 schematic before and after](tests/svg/__snapshots__/boostxl-uln2003-schematic.snap.svg) |
+#### BOOSTXL-BASSENSORS
+
+![BOOSTXL-BASSENSORS PCB before and after](tests/svg/__snapshots__/boostxl-bassensors-pcb.snap.svg)
+
+![BOOSTXL-BASSENSORS schematic before and after](tests/svg/__snapshots__/boostxl-bassensors-schematic.snap.svg)
+
+#### BOOSTXL-RS232
+
+![BOOSTXL-RS232 PCB before and after](tests/svg/__snapshots__/boostxl-rs232-pcb.snap.svg)
+
+![BOOSTXL-RS232 schematic before and after](tests/svg/__snapshots__/boostxl-rs232-schematic.snap.svg)
+
+#### BOOSTXL-TMP107
+
+![BOOSTXL-TMP107 PCB before and after](tests/svg/__snapshots__/boostxl-tmp107-pcb.snap.svg)
+
+![BOOSTXL-TMP107 schematic before and after](tests/svg/__snapshots__/boostxl-tmp107-schematic.snap.svg)
+
+#### BOOSTXL-ULN2003
+
+![BOOSTXL-ULN2003 PCB before and after](tests/svg/__snapshots__/boostxl-uln2003-pcb.snap.svg)
+
+![BOOSTXL-ULN2003 schematic before and after](tests/svg/__snapshots__/boostxl-uln2003-schematic.snap.svg)
 
 ```sh
 bun install

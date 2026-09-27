@@ -22,12 +22,22 @@ export async function expectEvmBeforeAfterSnapshots(
   const before = structuredClone(options.circuitJson)
   const after = await subtractComponentFromCircuitJson(before, {
     componentNames: options.componentNames,
-    includeComponentsBetween: false,
   })
   const remainingNames = getSourceComponentNames(after)
   for (const componentName of options.componentNames) {
     expect(remainingNames).not.toContain(componentName)
   }
+  expect(
+    before.filter((element) => element.type === "pcb_trace").length,
+  ).toBeGreaterThan(0)
+  expect(
+    after.filter((element) => element.type === "pcb_trace").length,
+  ).toBeGreaterThan(0)
+  expect(
+    after.filter((element) => element.type === "schematic_trace").length,
+  ).toBeGreaterThan(0)
+  expect(after.filter((element) => element.type.endsWith("_error"))).toEqual([])
+  expect(findDanglingPcbRoutePortIds(after)).toEqual([])
 
   const pcbComparison = createComparisonSvg({
     afterSvg: convertCircuitJsonToPcbSvg(after),
@@ -47,6 +57,26 @@ export async function expectEvmBeforeAfterSnapshots(
     options.testPath,
     "schematic",
   )
+}
+
+function findDanglingPcbRoutePortIds(circuitJson: CircuitJson): string[] {
+  const pcbPortIds = new Set(
+    circuitJson
+      .filter((element) => element.type === "pcb_port")
+      .map((pcbPort) => pcbPort.pcb_port_id),
+  )
+  return circuitJson
+    .filter((element) => element.type === "pcb_trace")
+    .flatMap((pcbTrace) => pcbTrace.route)
+    .flatMap((routePoint) =>
+      routePoint.route_type === "wire"
+        ? [routePoint.start_pcb_port_id, routePoint.end_pcb_port_id]
+        : [],
+    )
+    .filter(
+      (pcbPortId): pcbPortId is string =>
+        pcbPortId !== undefined && !pcbPortIds.has(pcbPortId),
+    )
 }
 
 function createComparisonSvg(options: {

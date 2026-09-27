@@ -1,4 +1,8 @@
 import type { CircuitIndex } from "./circuit-index"
+import {
+  type ConnectivityIdentity,
+  getTraceConnectivityIdentities,
+} from "./connectivity-identity"
 import type { SourceComponentId } from "./types"
 
 type ComponentGraph = ReadonlyMap<
@@ -37,19 +41,54 @@ export function expandWithComponentsBetween(
 
 function createComponentGraph(index: CircuitIndex): ComponentGraph {
   const neighborsById = new Map<SourceComponentId, Set<SourceComponentId>>()
+  const componentIdsByConnectivityIdentity = new Map<
+    ConnectivityIdentity,
+    Set<SourceComponentId>
+  >()
   for (const trace of index.sourceTraces) {
     const componentIds = new Set<SourceComponentId>()
     for (const portId of trace.connected_source_port_ids) {
       const componentId = index.sourcePortById.get(portId)?.source_component_id
       if (componentId) componentIds.add(componentId)
     }
-    if (componentIds.size !== 2) continue
-    const [leftId, rightId] = [...componentIds].sort()
-    if (!leftId || !rightId) continue
-    addNeighbor({ neighborsById, componentId: leftId, neighborId: rightId })
-    addNeighbor({ neighborsById, componentId: rightId, neighborId: leftId })
+    const connectivityIdentities = getTraceConnectivityIdentities(trace)
+    if (connectivityIdentities.length === 0) {
+      connectComponentPair({ neighborsById, componentIds })
+      continue
+    }
+    for (const connectivityIdentity of connectivityIdentities) {
+      const connectedComponentIds =
+        componentIdsByConnectivityIdentity.get(connectivityIdentity) ??
+        new Set()
+      for (const componentId of componentIds) {
+        connectedComponentIds.add(componentId)
+      }
+      componentIdsByConnectivityIdentity.set(
+        connectivityIdentity,
+        connectedComponentIds,
+      )
+    }
+  }
+  for (const componentIds of componentIdsByConnectivityIdentity.values()) {
+    if (componentIds.size === 2) {
+      connectComponentPair({ neighborsById, componentIds })
+    }
   }
   return neighborsById
+}
+
+function connectComponentPair({
+  neighborsById,
+  componentIds,
+}: {
+  neighborsById: Map<SourceComponentId, Set<SourceComponentId>>
+  componentIds: ReadonlySet<SourceComponentId>
+}): void {
+  if (componentIds.size !== 2) return
+  const [leftId, rightId] = [...componentIds].sort()
+  if (!leftId || !rightId) return
+  addNeighbor({ neighborsById, componentId: leftId, neighborId: rightId })
+  addNeighbor({ neighborsById, componentId: rightId, neighborId: leftId })
 }
 
 function addNeighbor({

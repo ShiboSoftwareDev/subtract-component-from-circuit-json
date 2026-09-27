@@ -4,9 +4,8 @@ import {
   createDirectPcbTrace,
   createDirectSchematicTrace,
 } from "./create-direct-physical-traces"
-import type { DirectConnection } from "./direct-connection"
 import { reserveId } from "./reserve-id"
-import type { SourceTraceId } from "./types"
+import type { DirectConnection, SourceTraceId } from "./types"
 
 export interface DirectElementResult {
   elements: readonly AnyCircuitElement[]

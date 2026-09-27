@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
-    "@tsci/tscircuit.boosters": "github:tscircuit/boosters#4b8b330cf06cee8109edab00d8bba5973925da76",
+    "@tsci/tscircuit.boosters": "github:tscircuit/boosters#4f4b1b160f487ac2a95733324009c360885081ac",
     "@tscircuit/props": "^0.0.666",
     "@types/bun": "1.4.2",
     "@types/react": "19.3.0",

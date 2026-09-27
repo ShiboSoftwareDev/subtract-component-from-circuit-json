@@ -1,8 +1,7 @@
 import type { LayerRef, PcbTrace, SchematicTrace } from "circuit-json"
 import type { CircuitIndex } from "./circuit-index"
-import type { DirectConnection } from "./direct-connection"
 import { reserveId } from "./reserve-id"
-import type { ElementId, SourceTraceId } from "./types"
+import type { DirectConnection, ElementId, SourceTraceId } from "./types"
 
 export interface DirectPhysicalTraceRequest {
   index: CircuitIndex

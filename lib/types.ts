@@ -21,3 +21,8 @@ export type ElementId = string
 export type SourceComponentId = string
 export type SourcePortId = string
 export type SourceTraceId = string
+
+export interface DirectConnection {
+  sourcePortIds: readonly [SourcePortId, SourcePortId]
+  relatedSourceTraceIds: readonly SourceTraceId[]
+}
