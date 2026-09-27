@@ -5,26 +5,20 @@ import type { ElementId } from "./types"
 export interface RemovalFilterRequest {
   elements: readonly AnyCircuitElement[]
   seedIds: ReadonlySet<ElementId>
-  connectivityKeys: ReadonlySet<string>
 }
 
 export function filterRemovedElements(
   request: RemovalFilterRequest,
 ): CircuitJson {
-  const { elements, seedIds, connectivityKeys } = request
+  const { elements, seedIds } = request
   const removedIds = new Set(seedIds)
-  for (const element of elements) {
-    if (!matchesRemovedConnectivity(element, connectivityKeys)) continue
-    const elementId = getElementId(element)
-    if (elementId) removedIds.add(elementId)
-  }
   let foundDependency = true
   while (foundDependency) {
     foundDependency = false
     for (const element of elements) {
       const elementId = getElementId(element)
       if (!elementId || removedIds.has(elementId)) continue
-      if (!referencesRemovedId(element, removedIds)) continue
+      if (!referencesRemovedId({ element, removedIds })) continue
       removedIds.add(elementId)
       foundDependency = true
     }
@@ -37,32 +31,53 @@ export function filterRemovedElements(
   )
 }
 
-function matchesRemovedConnectivity(
-  element: AnyCircuitElement,
-  connectivityKeys: ReadonlySet<string>,
-): boolean {
-  if (
-    element.type === "schematic_trace" &&
-    element.subcircuit_connectivity_map_key
-  ) {
-    return connectivityKeys.has(element.subcircuit_connectivity_map_key)
-  }
-  if (element.type === "schematic_net_label" && element.source_net_id) {
-    return connectivityKeys.has(element.source_net_id)
-  }
-  return false
+function referencesRemovedId({
+  element,
+  removedIds,
+}: {
+  element: AnyCircuitElement
+  removedIds: ReadonlySet<ElementId>
+}): boolean {
+  const primaryKey = `${element.type}_id`
+  return Object.entries(element).some(([fieldName, fieldEntry]) => {
+    if (fieldName === primaryKey) return false
+    return fieldEntryReferencesRemovedId({
+      fieldName,
+      fieldEntry,
+      removedIds,
+    })
+  })
 }
 
-function referencesRemovedId(
-  element: AnyCircuitElement,
-  removedIds: ReadonlySet<ElementId>,
-): boolean {
-  const primaryKey = `${element.type}_id`
-  for (const [fieldName, fieldEntry] of Object.entries(element)) {
-    if (fieldName === primaryKey) continue
-    if (fieldName.endsWith("_id") && typeof fieldEntry === "string") {
-      if (removedIds.has(fieldEntry)) return true
-    }
+function fieldEntryReferencesRemovedId({
+  fieldName,
+  fieldEntry,
+  removedIds,
+}: {
+  fieldName: string
+  fieldEntry: unknown
+  removedIds: ReadonlySet<ElementId>
+}): boolean {
+  if (fieldName.endsWith("_id") && typeof fieldEntry === "string") {
+    return removedIds.has(fieldEntry)
+  }
+  if (Array.isArray(fieldEntry)) {
+    return fieldEntry.some((arrayEntry) =>
+      fieldEntryReferencesRemovedId({
+        fieldName,
+        fieldEntry: arrayEntry,
+        removedIds,
+      }),
+    )
+  }
+  if (fieldEntry && typeof fieldEntry === "object") {
+    return Object.entries(fieldEntry).some(([nestedFieldName, nestedEntry]) =>
+      fieldEntryReferencesRemovedId({
+        fieldName: nestedFieldName,
+        fieldEntry: nestedEntry,
+        removedIds,
+      }),
+    )
   }
   return false
 }

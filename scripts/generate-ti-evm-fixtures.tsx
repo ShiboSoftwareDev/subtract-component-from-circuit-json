@@ -23,7 +23,32 @@ for (const fixture of fixtures) {
   const circuit = new Circuit()
   circuit.add(<fixture.Board />)
   await circuit.renderUntilSettled()
+  const circuitJson = circuit.getCircuitJson()
+  assertFixtureIntegrity(fixture.fixtureName, circuitJson)
   const fixturePath = `${fixtureDirectory}/${fixture.fixtureName}.circuit.json`
-  await Bun.write(fixturePath, `${JSON.stringify(circuit.getCircuitJson())}\n`)
+  await Bun.write(fixturePath, `${JSON.stringify(circuitJson)}\n`)
   console.log(`Wrote ${fixturePath}`)
+}
+
+function assertFixtureIntegrity(
+  fixtureName: string,
+  circuitJson: ReturnType<Circuit["getCircuitJson"]>,
+): void {
+  const pcbTraceCount = circuitJson.filter(
+    (element) => element.type === "pcb_trace",
+  ).length
+  if (pcbTraceCount === 0) {
+    throw new Error(`${fixtureName} rendered without PCB traces`)
+  }
+  const blockingErrors = circuitJson.filter(
+    (element) =>
+      element.type === "pcb_autorouting_error" ||
+      element.type === "source_trace_not_connected_error" ||
+      element.type === "pcb_trace_error",
+  )
+  if (blockingErrors.length > 0) {
+    throw new Error(
+      `${fixtureName} rendered with ${blockingErrors.length} routing errors`,
+    )
+  }
 }

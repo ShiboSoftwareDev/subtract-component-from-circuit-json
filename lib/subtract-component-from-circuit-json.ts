@@ -4,6 +4,8 @@ import { expandWithComponentsBetween } from "./component-graph"
 import { createDirectElements } from "./create-direct-elements"
 import { resolveRemovalConnections } from "./direct-connection"
 import { filterRemovedElements } from "./filter-removed-elements"
+import { findInflatedDirectTraceIds } from "./find-inflated-direct-trace-ids"
+import { inflateSubtractedCircuitJson } from "./inflate-subtracted-circuit-json"
 import { normalizeSubtractInput } from "./normalize-subtract-input"
 import { resolveSelectedComponentIds } from "./resolve-selected-components"
 import type {
@@ -44,18 +46,9 @@ export async function subtractComponentFromCircuitJsonWithDetails(
     ...removalConnections.removedSourcePortIds,
     ...removalConnections.touchedSourceTraceIds,
   ])
-  const touchedConnectivityKeys = new Set(
-    index.sourceTraces
-      .filter((trace) =>
-        removalConnections.touchedSourceTraceIds.has(trace.source_trace_id),
-      )
-      .map((trace) => trace.subcircuit_connectivity_map_key)
-      .filter((key) => key !== undefined),
-  )
   const retainedElements = filterRemovedElements({
     elements: originalCircuitJson,
     seedIds,
-    connectivityKeys: touchedConnectivityKeys,
   })
   const directResult =
     options.preserveNetConnectivity === false
@@ -66,11 +59,20 @@ export async function subtractComponentFromCircuitJsonWithDetails(
       removedComponentIds.has(component.source_component_id),
     )
     .map((component) => component.name)
+  const inflatedCircuitJson = await inflateSubtractedCircuitJson([
+    ...retainedElements,
+    ...directResult.elements,
+  ])
+  const addedSourceTraceIds = findInflatedDirectTraceIds({
+    originalIndex: index,
+    directConnections: removalConnections.directConnections,
+    inflatedCircuitJson,
+  })
 
   return {
-    circuitJson: [...retainedElements, ...directResult.elements],
+    circuitJson: inflatedCircuitJson,
     removedComponentNames,
     removedSourceComponentIds: [...removedComponentIds],
-    addedSourceTraceIds: directResult.sourceTraceIds,
+    addedSourceTraceIds,
   }
 }

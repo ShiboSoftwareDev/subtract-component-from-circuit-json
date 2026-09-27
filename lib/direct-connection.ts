@@ -1,10 +1,12 @@
 import type { CircuitIndex } from "./circuit-index"
-import type { SourceComponentId, SourcePortId, SourceTraceId } from "./types"
-
-export interface DirectConnection {
-  sourcePortIds: readonly [SourcePortId, SourcePortId]
-  relatedSourceTraceIds: readonly SourceTraceId[]
-}
+import { getDanglingPcbTraceRepairConnections } from "./dangling-pcb-trace-repair"
+import { getSafeComponentBypassConnections } from "./safe-component-bypass"
+import type {
+  DirectConnection,
+  SourceComponentId,
+  SourcePortId,
+  SourceTraceId,
+} from "./types"
 
 export interface RemovalConnections {
   removedSourcePortIds: ReadonlySet<SourcePortId>
@@ -18,17 +20,20 @@ export function resolveRemovalConnections(
 ): RemovalConnections {
   const removedSourcePortIds = new Set(
     index.sourcePorts
-      .filter((port) =>
-        port.source_component_id
-          ? removedComponentIds.has(port.source_component_id)
+      .filter((sourcePort) =>
+        sourcePort.source_component_id
+          ? removedComponentIds.has(sourcePort.source_component_id)
           : false,
       )
-      .map((port) => port.source_port_id),
+      .map((sourcePort) => sourcePort.source_port_id),
   )
-  const touchedTraces = index.sourceTraces.filter((trace) =>
-    trace.connected_source_port_ids.some((portId) =>
-      removedSourcePortIds.has(portId),
+  const touchedTraces = index.sourceTraces.filter((sourceTrace) =>
+    sourceTrace.connected_source_port_ids.some((sourcePortId) =>
+      removedSourcePortIds.has(sourcePortId),
     ),
+  )
+  const touchedSourceTraceIds = new Set(
+    touchedTraces.map((sourceTrace) => sourceTrace.source_trace_id),
   )
   const directConnections: DirectConnection[] = []
   addSurvivingTraceConnections({
@@ -36,17 +41,21 @@ export function resolveRemovalConnections(
     traces: touchedTraces,
     removedPortIds: removedSourcePortIds,
   })
-  addSafeComponentBypasses({
-    connections: directConnections,
-    index,
-    removedComponentIds,
-    removedPortIds: removedSourcePortIds,
-  })
+  directConnections.push(
+    ...getSafeComponentBypassConnections({
+      index,
+      removedComponentIds,
+      removedSourcePortIds,
+    }),
+    ...getDanglingPcbTraceRepairConnections({
+      index,
+      removedSourcePortIds,
+      touchedSourceTraceIds,
+    }),
+  )
   return {
     removedSourcePortIds,
-    touchedSourceTraceIds: new Set(
-      touchedTraces.map((trace) => trace.source_trace_id),
-    ),
+    touchedSourceTraceIds,
     directConnections: deduplicateConnections(directConnections),
   }
 }
@@ -60,80 +69,19 @@ function addSurvivingTraceConnections({
   traces: CircuitIndex["sourceTraces"]
   removedPortIds: ReadonlySet<SourcePortId>
 }): void {
-  for (const trace of traces) {
-    const survivingPortIds = trace.connected_source_port_ids.filter(
-      (portId) => !removedPortIds.has(portId),
+  for (const sourceTrace of traces) {
+    const survivingPortIds = sourceTrace.connected_source_port_ids.filter(
+      (sourcePortId) => !removedPortIds.has(sourcePortId),
     )
     const anchorPortId = survivingPortIds[0]
     if (!anchorPortId) continue
     for (const endPortId of survivingPortIds.slice(1)) {
       connections.push({
         sourcePortIds: [anchorPortId, endPortId],
-        relatedSourceTraceIds: [trace.source_trace_id],
+        relatedSourceTraceIds: [sourceTrace.source_trace_id],
       })
     }
   }
-}
-
-function addSafeComponentBypasses({
-  connections,
-  index,
-  removedComponentIds,
-  removedPortIds,
-}: {
-  connections: DirectConnection[]
-  index: CircuitIndex
-  removedComponentIds: ReadonlySet<SourceComponentId>
-  removedPortIds: ReadonlySet<SourcePortId>
-}): void {
-  for (const componentId of removedComponentIds) {
-    const component = index.sourceComponentById.get(componentId)
-    if (!component) continue
-    const componentPortIds = index.sourcePorts
-      .filter((port) => port.source_component_id === componentId)
-      .map((port) => port.source_port_id)
-    const incidentTraces = index.sourceTraces.filter((trace) =>
-      trace.connected_source_port_ids.some((portId) =>
-        componentPortIds.includes(portId),
-      ),
-    )
-    if (incidentTraces.length !== 2) continue
-    const boundaryPortIds = incidentTraces.map((trace) =>
-      trace.connected_source_port_ids.find(
-        (portId) => !removedPortIds.has(portId),
-      ),
-    )
-    const [leftPortId, rightPortId] = boundaryPortIds
-    if (!leftPortId || !rightPortId || leftPortId === rightPortId) continue
-    if (!isSafeBypass(component, incidentTraces)) continue
-    connections.push({
-      sourcePortIds: [leftPortId, rightPortId],
-      relatedSourceTraceIds: incidentTraces.map(
-        (trace) => trace.source_trace_id,
-      ),
-    })
-  }
-}
-
-function isSafeBypass(
-  component: CircuitIndex["sourceComponents"][number],
-  traces: CircuitIndex["sourceTraces"],
-): boolean {
-  const isZeroOhm =
-    component.ftype === "simple_resistor" &&
-    Reflect.get(component, "resistance") === 0
-  if (isZeroOhm) return true
-  const [leftTrace, rightTrace] = traces
-  if (!leftTrace || !rightTrace) return false
-  const hasSharedNet = leftTrace.connected_source_net_ids.some((netId) =>
-    rightTrace.connected_source_net_ids.includes(netId),
-  )
-  const hasSharedKey = Boolean(
-    leftTrace.subcircuit_connectivity_map_key &&
-      leftTrace.subcircuit_connectivity_map_key ===
-        rightTrace.subcircuit_connectivity_map_key,
-  )
-  return hasSharedNet || hasSharedKey
 }
 
 function deduplicateConnections(
